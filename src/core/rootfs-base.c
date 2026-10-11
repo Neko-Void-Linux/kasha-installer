@@ -52,7 +52,7 @@ static const char *CORE_PACKAGES[] = {
 static const char BASE_PACKAGES[] =
     "void-repo-nonfree void-repo-multilib void-repo-multilib-nonfree "
     "base-system linux-firmware linux-firmware-amd linux-firmware-intel "
-    "linux-mainline linux-mainline-headers dkms dnsmasq kasha-installer iptables tlp tlp-pd tlp-rdw "
+    "linux-mainline linux-mainline-headers dkms dnsmasq iptables tlp tlp-pd tlp-rdw "
     "intel-ucode at-spi2-core yad git inetutils qemu-ga upower open-vm-tools "
     "spice-vdagent elogind bash-completion cryptsetup dbus dialog grub mdadm nano rtkit "
     "xdo xsetroot xinit Neko-Wizard neko-icons neko-themes neko-backgrounds xtools tmux xmirror "
