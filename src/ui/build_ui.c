@@ -509,6 +509,10 @@ void build_ui(AppData *app) {
         }
     }
 
+    // Populate keyboard variants for the default layout (signal isn't
+    // emitted because active was set before it was connected).
+    on_kbd_layout_changed(GTK_COMBO_BOX(app->kbd_layout_combo), app);
+
     gtk_widget_show_all(app->window);
 
 }
