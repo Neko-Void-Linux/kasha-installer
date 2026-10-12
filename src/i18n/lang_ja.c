@@ -138,6 +138,23 @@ static const LangInfo lang_ja = {
     .val_password_match = "ユーザーパスワードが一致しません。",
     .val_root_pass      = "rootパスワードを入力してください。",
     .val_incomplete     = "設定が不完全です",
+
+    // Installation error popup
+    .error_popup_title = "インストール失敗",
+    .error_popup_body = "インストールが正常に完了しませんでした。ログをコピーして問題を報告できます。",
+    .error_copy_log = "ログを_コピー",
+    .error_send_log = "ログを_送信",
+    .error_log_copied = "ログをクリップボードにコピーしました。",
+    .error_report_link = "報告リンク:",
+    .error_close = "_閉じる",
+    .error_retry_btn = "インストールを再試行",
+
+    // Installation step failures
+    .error_partitioning_failed = "エラー: ディスクのパーティション作成に失敗しました!",
+    .error_format_failed = "エラー: フォーマットとマウントに失敗しました!",
+    .error_base_system_failed = "エラー: ベースシステムのインストールに失敗しました!",
+    .error_system_config_failed = "エラー: システム設定に失敗しました!",
+    .error_bootloader_failed = "エラー: ブートローダーのインストールに失敗しました!",
 };
 
 const LangInfo* lang_ja_module(void) {

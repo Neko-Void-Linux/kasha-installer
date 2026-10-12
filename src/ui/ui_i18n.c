@@ -122,6 +122,23 @@ const char* get_loc(const char *key, int lang) {
     if (strcmp(key, "val_root_pass")      == 0) return li->val_root_pass;
     if (strcmp(key, "val_incomplete")     == 0) return li->val_incomplete;
 
+    // Installation error popup
+    if (strcmp(key, "error_popup_title")  == 0) return li->error_popup_title;
+    if (strcmp(key, "error_popup_body")   == 0) return li->error_popup_body;
+    if (strcmp(key, "error_copy_log")     == 0) return li->error_copy_log;
+    if (strcmp(key, "error_send_log")     == 0) return li->error_send_log;
+    if (strcmp(key, "error_log_copied")   == 0) return li->error_log_copied;
+    if (strcmp(key, "error_report_link")  == 0) return li->error_report_link;
+    if (strcmp(key, "error_close")        == 0) return li->error_close;
+    if (strcmp(key, "error_retry_btn")    == 0) return li->error_retry_btn;
+
+    // Installation step failures
+    if (strcmp(key, "error_partitioning_failed")  == 0) return li->error_partitioning_failed;
+    if (strcmp(key, "error_format_failed")        == 0) return li->error_format_failed;
+    if (strcmp(key, "error_base_system_failed")   == 0) return li->error_base_system_failed;
+    if (strcmp(key, "error_system_config_failed") == 0) return li->error_system_config_failed;
+    if (strcmp(key, "error_bootloader_failed")    == 0) return li->error_bootloader_failed;
+
     return key;
 }
 

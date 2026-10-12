@@ -541,7 +541,8 @@ gpointer install_thread(gpointer data) {
     
     if (!app->part_config_list) {
         stop_progress_pulse(app);
-        log_to_ui(app, "ERROR: No partitions configured. Use Add/Edit Partition in Tab 1.", 0.0);
+        log_to_ui(app, get_loc("error_no_partitions", app->current_lang), 0.0);
+        set_ui_failed(app, "error_no_partitions");
         app->installing = FALSE; return NULL;
     }
 
@@ -559,7 +560,8 @@ gpointer install_thread(gpointer data) {
 
     if (!root_pass || strlen(root_pass) < 1) { 
         stop_progress_pulse(app);
-        log_to_ui(app, "Error: Root password missing.", 0.0); 
+        log_to_ui(app, get_loc("error_root_password", app->current_lang), 0.0); 
+        set_ui_failed(app, "error_root_password");
         goto fail_cleanup;
     }
     
@@ -575,37 +577,43 @@ gpointer install_thread(gpointer data) {
     }
     if (!r) {
         stop_progress_pulse(app);
-        log_to_ui(app, "ERROR: Root partition not configured.", 0.0);
+        log_to_ui(app, get_loc("error_no_root", app->current_lang), 0.0);
+        set_ui_failed(app, "error_no_root");
         goto fail_cleanup;
     }
 
     if (step_partitioning(app, disk_name) != 0) {
         stop_progress_pulse(app);
-        log_to_ui(app, "ERROR: Partitioning failed!", 0.0);
+        log_to_ui(app, get_loc("error_partitioning_failed", app->current_lang), 0.0);
+        set_ui_failed(app, "error_partitioning_failed");
         goto fail_cleanup;
     }
 
     if (step_format_and_mount(app, TARGETDIR) != 0) {
         stop_progress_pulse(app);
-        log_to_ui(app, "ERROR: Format and mount failed!", 0.0);
+        log_to_ui(app, get_loc("error_format_failed", app->current_lang), 0.0);
+        set_ui_failed(app, "error_format_failed");
         goto fail_cleanup;
     }
     
     if (step_install_base_system(app, TARGETDIR) != 0) {
         stop_progress_pulse(app);
-        log_to_ui(app, "ERROR: Base system installation failed!", 0.0);
+        log_to_ui(app, get_loc("error_base_system_failed", app->current_lang), 0.0);
+        set_ui_failed(app, "error_base_system_failed");
         goto fail_cleanup;
     }
     
     if (step_configure_system(app, TARGETDIR, hostname, locale, root_pass, user_login, user_fullname, user_pass, autologin_enabled) != 0) {
         stop_progress_pulse(app);
-        log_to_ui(app, "ERROR: System configuration failed!", 0.0);
+        log_to_ui(app, get_loc("error_system_config_failed", app->current_lang), 0.0);
+        set_ui_failed(app, "error_system_config_failed");
         goto fail_cleanup;
     }
     
     if (step_install_bootloader(app, TARGETDIR, disk_name) != 0) {
         stop_progress_pulse(app);
-        log_to_ui(app, "ERROR: Bootloader installation failed!", 0.0);
+        log_to_ui(app, get_loc("error_bootloader_failed", app->current_lang), 0.0);
+        set_ui_failed(app, "error_bootloader_failed");
         goto fail_cleanup;
     }
 
@@ -629,6 +637,16 @@ fail_cleanup:
 void start_installation(GtkWidget *widget, AppData *app) {
     if (app->installing) return;
     app->installing = TRUE;
+
+    /* Fresh run (including a retry after a failure): restore the install
+     * button label/colour so its previous success/failure state is cleared. */
+    gtk_button_set_label(GTK_BUTTON(widget), get_loc("install_btn", app->current_lang));
+    {
+        GtkStyleContext *ctx = gtk_widget_get_style_context(widget);
+        gtk_style_context_remove_class(ctx, "suggested-action");
+        gtk_style_context_add_class(ctx, "destructive-action");
+    }
+
     gtk_widget_set_sensitive(app->btn_back, FALSE);
     gtk_widget_set_sensitive(app->btn_next, FALSE);
 

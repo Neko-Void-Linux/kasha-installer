@@ -138,6 +138,23 @@ static const LangInfo lang_es = {
     .val_password_match = "Las contraseñas de usuario no coinciden.",
     .val_root_pass      = "Por favor ingrese una contraseña de root.",
     .val_incomplete     = "Configuración Incompleta",
+
+    // Installation error popup
+    .error_popup_title = "Instalación Fallida",
+    .error_popup_body = "La instalación no se completó correctamente. Puede copiar el registro y reportar el problema.",
+    .error_copy_log = "_Copiar Registro",
+    .error_send_log = "_Enviar Registro",
+    .error_log_copied = "Registro copiado al portapapeles.",
+    .error_report_link = "Enlace de reporte:",
+    .error_close = "_Cerrar",
+    .error_retry_btn = "Reintentar Instalación",
+
+    // Installation step failures
+    .error_partitioning_failed = "Error: ¡Falló el particionado del disco!",
+    .error_format_failed = "Error: ¡Falló el formateo y montaje!",
+    .error_base_system_failed = "Error: ¡Falló la instalación del sistema base!",
+    .error_system_config_failed = "Error: ¡Falló la configuración del sistema!",
+    .error_bootloader_failed = "Error: ¡Falló la instalación del gestor de arranque!",
 };
 
 const LangInfo* lang_es_module(void) {

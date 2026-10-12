@@ -235,6 +235,7 @@ void on_desktop_selected(GtkToggleButton *toggle, AppData *app);
 // ui.c (Main)
 void build_ui(AppData *app);
 void set_ui_finished(AppData *app);
+void set_ui_failed(AppData *app, const char *reason_key);
 GtkWidget* create_form_row(const gchar *label_text, GtkWidget **entry_ptr, GtkWidget **label_ptr);
 const char* get_loc(const char *key, int lang); // Localization helper
 void update_ui_language(AppData *app);

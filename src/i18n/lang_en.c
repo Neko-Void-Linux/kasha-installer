@@ -138,6 +138,23 @@ static const LangInfo lang_en = {
     .val_password_match = "User passwords do not match.",
     .val_root_pass      = "Please enter a root password.",
     .val_incomplete     = "Incomplete Configuration",
+
+    // Installation error popup
+    .error_popup_title = "Installation Failed",
+    .error_popup_body = "The installation did not complete successfully. You can copy the log and report the problem.",
+    .error_copy_log = "_Copy Log",
+    .error_send_log = "_Send Log",
+    .error_log_copied = "Log copied to clipboard.",
+    .error_report_link = "Report link:",
+    .error_close = "_Close",
+    .error_retry_btn = "Retry Installation",
+
+    // Installation step failures
+    .error_partitioning_failed = "Error: Disk partitioning failed!",
+    .error_format_failed = "Error: Formatting and mounting failed!",
+    .error_base_system_failed = "Error: Base system installation failed!",
+    .error_system_config_failed = "Error: System configuration failed!",
+    .error_bootloader_failed = "Error: Bootloader installation failed!",
 };
 
 const LangInfo* lang_en_module(void) {

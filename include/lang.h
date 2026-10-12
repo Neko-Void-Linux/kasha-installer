@@ -137,6 +137,23 @@ typedef struct {
     const char *val_password_match;
     const char *val_root_pass;
     const char *val_incomplete;
+
+    // Installation error popup
+    const char *error_popup_title;
+    const char *error_popup_body;
+    const char *error_copy_log;
+    const char *error_send_log;
+    const char *error_log_copied;
+    const char *error_report_link;
+    const char *error_close;
+    const char *error_retry_btn;
+
+    // Installation step failures
+    const char *error_partitioning_failed;
+    const char *error_format_failed;
+    const char *error_base_system_failed;
+    const char *error_system_config_failed;
+    const char *error_bootloader_failed;
 } LangInfo;
 
 extern const LangInfo *get_lang(const char *code);

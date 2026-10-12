@@ -26,6 +26,7 @@ GtkWidget* create_desktop_page(AppData *app);
 
 /* ui_finished.c */
 void set_ui_finished(AppData *app);
+void set_ui_failed(AppData *app, const char *reason_key);
 
 /* keyboard layouts (si están en country_data.h o similar, verifica) */
 const KbdLayout* get_keyboard_layouts(int *count);
