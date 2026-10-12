@@ -41,6 +41,12 @@ void config_sys_remove_live_user(AppData *app, const char *TARGETDIR) {
     run_sync(app, "rm -f %s/etc/machine-id", TARGETDIR);
     run_sync(app, "rm -f %s/var/lib/dbus/machine-id", TARGETDIR);
 
+    // GENERATE NEW MACHINE-ID
+    log_to_ui(app, "Generating new machine-id for target system...", 0.73);
+    run_sync(app, "mkdir -p %s/var/lib/dbus", TARGETDIR);
+    run_sync(app, "cat /proc/sys/kernel/random/uuid | tr -d '-' > %s/etc/machine-id", TARGETDIR);
+    run_sync(app, "ln -sf /etc/machine-id %s/var/lib/dbus/machine-id", TARGETDIR);
+
     // Copy NetworkManager WiFi/network connections from live system
     run_sync(app, "mkdir -p %s/etc/NetworkManager/system-connections", TARGETDIR);
     run_sync(app, "cp -rf /etc/NetworkManager/system-connections/* %s/etc/NetworkManager/system-connections/ 2>/dev/null || true", TARGETDIR);
