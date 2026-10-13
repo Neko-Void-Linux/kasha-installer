@@ -35,6 +35,9 @@ void configure_flatpak_repo(AppData *app, const char *TARGETDIR) {
     /* Create the required OSTree repo subdirectories */
     run_sync(app, "mkdir -p %s/var/lib/flatpak/repo/objects", TARGETDIR);
     run_sync(app, "mkdir -p %s/var/lib/flatpak/repo/tmp",     TARGETDIR);
+    run_sync(app, "mkdir -p /var/lib/flatpak/repo/refs/heads",     TARGETDIR);
+    run_sync(app, "mkdir -p /var/lib/flatpak/repo/refs/remotes",     TARGETDIR);
+    run_sync(app, "mkdir -p /var/lib/flatpak/repo/refs/mirrors ",     TARGETDIR);
 
 
     /* Configure Flatpak remotes inside the target system */
