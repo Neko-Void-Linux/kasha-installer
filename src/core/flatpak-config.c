@@ -35,23 +35,15 @@ void configure_flatpak_repo(AppData *app, const char *TARGETDIR) {
     /* Create the required OSTree repo subdirectories */
     run_sync(app, "mkdir -p %s/var/lib/flatpak/repo/objects", TARGETDIR);
     run_sync(app, "mkdir -p %s/var/lib/flatpak/repo/tmp",     TARGETDIR);
-    run_sync(app, "mkdir -p /var/lib/flatpak/repo/refs/heads",     TARGETDIR);
-    run_sync(app, "mkdir -p /var/lib/flatpak/repo/refs/remotes",     TARGETDIR);
-    run_sync(app, "mkdir -p /var/lib/flatpak/repo/refs/mirrors ",     TARGETDIR);
+    run_sync(app, "mkdir -p %s/var/lib/flatpak/repo/refs/heads", TARGETDIR);
+    run_sync(app, "mkdir -p %s/var/lib/flatpak/repo/refs/remotes", TARGETDIR);
+    run_sync(app, "mkdir -p %s/var/lib/flatpak/repo/refs/mirrors", TARGETDIR);
 
 
     /* Configure Flatpak remotes inside the target system */
     log_to_ui(app, "[Flatpak] Configuring remotes (flathub + trinity)...", -1);
-
-    /* Flathub: remove stale entry (if any) and re-add from official URL */
-    run_sync(app, "chroot %s flatpak remote-delete flathub 2>/dev/null || true", TARGETDIR);
-    run_sync(app, "chroot %s flatpak remote-add --if-not-exists flathub "
-                  "https://dl.flathub.org/repo/flathub.flatpakrepo", TARGETDIR);
-
-    /* Trinity Launcher: remove stale entry (if any) and add from GitHub */
-    run_sync(app, "chroot %s flatpak remote-delete trinity 2>/dev/null || true", TARGETDIR);
-    run_sync(app, "chroot %s flatpak remote-add trinity "
-                  "https://github.com/Trinity-LA/Trinity-Launcher/releases/download/flatpak/com.trench.trinity.launcher.flatpakrepo", TARGETDIR);
+    run_sync(app, "chroot %s flatpak remote-add --if-not-exists flathub https://dl.flathub.org/repo/flathub.flatpakrepo", TARGETDIR);
+    run_sync(app, "chroot %s flatpak remote-add trinity https://github.com/Trinity-LA/Trinity-Launcher/releases/download/flatpak/com.trench.trinity.launcher.flatpakrepo", TARGETDIR);
 
     /* Write the OSTree repo config (bare-user-only, matches Flatpak's default) */
     run_sync(app,
