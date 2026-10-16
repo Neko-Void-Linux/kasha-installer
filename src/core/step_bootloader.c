@@ -73,10 +73,47 @@ int bootloader_install_grub(AppData *app, const char *TARGETDIR, const char *dis
 #else
         log_to_ui(app, "[Universal] grub EFI package must be pre-installed in the base image.", 0.91);
 #endif
-        if (run_sync(app, "chroot %s grub-install --target=%s --efi-directory=/boot/efi --bootloader-id=BOOT --recheck --removable", TARGETDIR, app->efi_target) != 0) {
+        /* Install GRUB into a named EFI directory (EFI/NekoVoid) so a proper
+         * "NekoVoid" NVRAM boot entry can be registered below. */
+        if (run_sync(app, "chroot %s grub-install --target=%s --efi-directory=/boot/efi --bootloader-id=NekoVoid --recheck", TARGETDIR, app->efi_target) != 0) {
             log_to_ui(app, "ERROR: grub-install (EFI) failed! Check that the EFI partition is mounted at /boot/efi.", 0.0);
             return -1;
         }
+
+        /* Also install the removable fallback (EFI/BOOT/BOOTX64.EFI) so the
+         * machine still boots on firmware with a full or buggy NVRAM. */
+        run_sync(app, "chroot %s grub-install --target=%s --efi-directory=/boot/efi --bootloader-id=BOOT --recheck --removable", TARGETDIR, app->efi_target);
+
+        /* After grub-install, ensure the UEFI boot entry exists. grub-install
+         * usually registers it, but that is unreliable inside a chroot, so we
+         * create it explicitly with efibootmgr. Existing duplicate entries
+         * with the same label are removed first. */
+        log_to_ui(app, "Creating UEFI boot entry with efibootmgr...", 0.915);
+
+        /* The GRUB EFI filename depends on the firmware architecture. */
+        const char *grub_efi_file =
+            (app->efi_target && strcmp(app->efi_target, "i386-efi") == 0)
+                ? "grubia32.efi" : "grubx64.efi";
+
+        char efiboot_cmd[1024];
+        snprintf(efiboot_cmd, sizeof(efiboot_cmd),
+            "chroot %s sh -c '"
+            "EFI_DEV=$(findmnt -n -o SOURCE /boot/efi 2>/dev/null || echo \"\"); "
+            "if [ -z \"$EFI_DEV\" ]; then "
+            "  echo \"Error: EFI partition not mounted\"; exit 1; "
+            "fi; "
+            "EFI_PART=$(echo \"$EFI_DEV\" | grep -oP 'nvme\\d+n\\d+p\\K\\d+$|sd\\w\\K\\d+$'); "
+            "EFI_DISK=$(echo \"$EFI_DEV\" | grep -oP '^/dev/(nvme\\d+n\\d+|sd[a-z])'); "
+            "for n in $(efibootmgr 2>/dev/null | sed -n \"s/^Boot\\([0-9A-Fa-f]\\{4\\}\\)[^A-Za-z]*NekoVoid.*/\\1/p\"); do "
+            "  efibootmgr -b \"$n\" -B >/dev/null 2>&1; "
+            "done; "
+            "efibootmgr --create --disk \"$EFI_DISK\" --part \"$EFI_PART\" "
+            "--label \"NekoVoid\" --loader \"\\\\EFI\\\\NekoVoid\\\\%s\"'",
+            TARGETDIR, grub_efi_file);
+
+        /* Non-fatal: the removable fallback still boots if this fails. */
+        if (run_sync(app, "%s", efiboot_cmd) != 0)
+            log_to_ui(app, "Warning: could not create the UEFI boot entry; the fallback bootloader will be used instead.", 0.0);
     } else {
 #ifndef UNIVERSAL_BUILD
         /* --- Void Linux: install grub-i386-pc for MBR/Legacy BIOS --- */
