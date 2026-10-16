@@ -129,21 +129,33 @@ int step_partitioning(AppData *app, const char *disk_name) {
         gboolean is_mbr = (pt_type && strcmp(pt_type, "dos") == 0);
         log_to_ui_printf(app, "Partition table type: %s", pt_type ? pt_type : "unknown");
 
+        gboolean use_logical = FALSE;
+
         if (is_mbr) {
             int primary_count = get_mbr_primary_count(disk_name);
             int slots_needed = 1; // root partition
-            if (need_new_efi) slots_needed++; // should not happen on MBR, but safety
+            if (need_new_efi) slots_needed++;
 
-            log_to_ui_printf(app, "MBR: %d primary partitions found, need %d more slot(s)",
-                             primary_count, slots_needed);
+            // Check if an extended partition already exists (types 5, f or 85)
+            char check_ext_cmd[256];
+            snprintf(check_ext_cmd, sizeof(check_ext_cmd),
+                     "sfdisk -d /dev/%s 2>/dev/null | grep -qE 'type=5|type=f|type=85'", disk_name);
+            gboolean has_extended = (system(check_ext_cmd) == 0);
+
+            log_to_ui_printf(app, "MBR: %d primary partitions found, extended exists: %s",
+                             primary_count, has_extended ? "YES" : "NO");
 
             if (primary_count + slots_needed > 4) {
-                log_to_ui_printf(app,
-                                 "ERROR: MBR disk already has %d primary partitions (max 4). "
-                                 "Cannot add %d more. Use GParted to free a partition slot, "
-                                 "or convert the disk to GPT.", primary_count, slots_needed);
-                g_free(pt_type);
-                return -1;
+                if (!has_extended && primary_count >= 4) {
+                    log_to_ui_printf(app,
+                                     "ERROR: MBR disk already has 4 primary partitions and NO extended partition. "
+                                     "Cannot add %d more partitions safely. Please use GParted to delete or "
+                                     "convert a primary partition to 'Extended' before dual-booting.", slots_needed);
+                    g_free(pt_type);
+                    return -1;
+                }
+                log_to_ui(app, "MBR limit reached: Will create Logical partition(s) inside Extended.", 0.155);
+                use_logical = TRUE;
             }
         }
         g_free(pt_type);
@@ -274,9 +286,22 @@ int step_partitioning(AppData *app, const char *disk_name) {
         if (sf) {
             if (need_new_efi) {
                 log_to_ui(app, "Creating new EFI partition...", 0.18);
-                fprintf(sf, ",512M,U\n"); // ESP in free space
+                if (use_logical && is_mbr) {
+                    fprintf(sf, ",512M,L\n"); // Logical EFI (fallback if forced)
+                } else {
+                    fprintf(sf, ",512M,U\n"); // Primary EFI (ESP)
+                }
             }
-            fprintf(sf, ",,L\n"); // Root in remaining free space
+
+            // Root partition: explicit MBR type 83 for a primary, generic
+            // Linux ('L') for a logical partition or for GPT.
+            if (use_logical && is_mbr) {
+                fprintf(sf, ",,L\n"); // Logical Linux inside the extended partition
+            } else if (is_mbr) {
+                fprintf(sf, ",,83\n"); // Primary Linux (type 83)
+            } else {
+                fprintf(sf, ",,L\n"); // GPT: Linux filesystem
+            }
 
             int sfdisk_ret = pclose(sf);
             if (sfdisk_ret != 0) {
@@ -300,6 +325,23 @@ int step_partitioning(AppData *app, const char *disk_name) {
         if (g_ascii_isdigit(disk_name[len-1])) sep = "p";
 
         int new_part_base = existing_part_count + 1;
+
+        // CRITICAL FOR MBR: logical partitions ALWAYS start at number 5
+        if (use_logical && is_mbr) {
+            int log_part = 5;
+            char check_cmd[128];
+            snprintf(check_cmd, sizeof(check_cmd),
+                     "lsblk -rn -o NAME /dev/%s 2>/dev/null | grep -q '^%s%s%d$'",
+                     disk_name, disk_name, sep, log_part);
+            while (system(check_cmd) == 0) {
+                log_part++;
+                snprintf(check_cmd, sizeof(check_cmd),
+                         "lsblk -rn -o NAME /dev/%s 2>/dev/null | grep -q '^%s%s%d$'",
+                         disk_name, disk_name, sep, log_part);
+            }
+            new_part_base = log_part;
+            log_to_ui_printf(app, "Using logical partition numbering, starting at: %d", new_part_base);
+        }
 
         GSList *l = app->part_config_list;
         while(l) {
